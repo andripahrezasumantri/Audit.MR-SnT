@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matahari Audit Club | Gen Z Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- SheetJS (xlsx) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Google Fonts Plus Jakarta Sans untuk vibe modern & playful -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Neo-brutalism hard shadow effect */
+        .neo-shadow {
+            box-shadow: 4px 4px 0px #0f172a;
+        }
+        .neo-shadow-sm {
+            box-shadow: 2px 2px 0px #0f172a;
+        }
+        .neo-shadow:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #0f172a;
+        }
+    </style>
+</head>
+<body class="bg-[#f3f4f6] text-slate-900 min-h-screen p-4 md:p-8">
+
+    <!-- Container Utama -->
+    <div class="max-w-5xl mx-auto space-y-6">
+        
+        <!-- Header / Banner ala Gen Z -->
+        <header class="bg-white border-3 border-slate-900 rounded-2xl p-6 neo-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-600 border-2 border-slate-900 flex items-center justify-center font-extrabold text-white text-xl neo-shadow-sm">
+                    M
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Matahari Audit Club ⚡️</h1>
+                    <p class="text-xs font-semibold text-indigo-600">Duta Mall Banjarmasin • Internal Check</p>
+                </div>
+            </div>
+            <div class="bg-yellow-300 border-2 border-slate-900 px-4 py-1.5 rounded-full text-xs font-bold neo-shadow-sm rotate-1">
+                ✨ Client-Side Mode: ON
+            </div>
+        </header>
+
+        <!-- Upload Panel (Neo-Brutalist Cards) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Card Database Karyawan -->
+            <div class="bg-white border-3 border-slate-900 rounded-2xl p-6 neo-shadow space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="bg-emerald-300 border-2 border-slate-900 text-xs font-extrabold px-3 py-1 rounded-lg neo-shadow-sm">
+                        STEP 01
+                    </span>
+                    <span class="text-xs font-bold text-slate-500">Database Excel</span>
+                </div>
+                <div>
+                    <label class="block text-sm font-extrabold text-slate-900 mb-2">Upload Data Karyawan (.xlsx)</label>
+                    <input type="file" id="dbFile" accept=".xlsx, .xls" 
+                        class="block w-full text-xs text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-2 file:border-slate-950 file:text-xs file:font-extrabold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                </div>
+                <p id="dbStatus" class="text-xs font-bold text-slate-500 bg-slate-100 p-3 rounded-xl border-2 border-slate-300">
+                    📂 Belum ada database yang di-load, bro.
+                </p>
+            </div>
+
+            <!-- Card Laporan Transaksi -->
+            <div class="bg-white border-3 border-slate-900 rounded-2xl p-6 neo-shadow space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="bg-pink-300 border-2 border-slate-900 text-xs font-extrabold px-3 py-1 rounded-lg neo-shadow-sm">
+                        STEP 02
+                    </span>
+                    <span class="text-xs font-bold text-slate-500">File Laporan</span>
+                </div>
+                <div>
+                    <label class="block text-sm font-extrabold text-slate-900 mb-2">Upload Laporan Transaksi</label>
+                    <input type="file" id="reportFile" accept=".xlsx, .xls, .csv" 
+                        class="block w-full text-xs text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-2 file:border-slate-950 file:text-xs file:font-extrabold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer">
+                </div>
+                <p id="reportStatus" class="text-xs font-bold text-slate-500 bg-slate-100 p-3 rounded-xl border-2 border-slate-300">
+                    📂 Belum ada laporan yang dipilih.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Tombol Eksekusi Utama -->
+        <div class="text-center pt-2">
+            <button id="btnProcess" 
+                class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-base px-10 py-4 rounded-2xl border-3 border-slate-900 neo-shadow transition cursor-pointer">
+                🚀 JALANKAN AUDIT SEKARANG!
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-8">
+            <div class="inline-block bg-yellow-300 border-3 border-slate-900 px-6 py-3 rounded-2xl neo-shadow font-extrabold text-sm animate-bounce">
+                ⏳ Lagi nge-cek data di browser, sabar ya bro...
+            </div>
+        </div>
+
+        <!-- Result Container -->
+        <div id="resultContainer" class="hidden space-y-6 pt-4">
+            
+            <!-- Dashboard Metrics (Gen Z Cards) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-sky-200 border-3 border-slate-900 rounded-2xl p-5 neo-shadow">
+                    <p class="text-xs font-extrabold text-slate-800 uppercase">Total Transaksi</p>
+                    <h3 id="statTotal" class="text-4xl font-extrabold text-slate-900 mt-2">0</h3>
+                </div>
+                <div class="bg-emerald-300 border-3 border-slate-900 rounded-2xl p-5 neo-shadow">
+                    <p class="text-xs font-extrabold text-slate-800 uppercase">Karyawan Ketahuan Belanja</p>
+                    <h3 id="statEmployee" class="text-4xl font-extrabold text-slate-900 mt-2">0</h3>
+                </div>
+                <div class="bg-purple-300 border-3 border-slate-900 rounded-2xl p-5 neo-shadow">
+                    <p class="text-xs font-extrabold text-slate-800 uppercase">Rasio Temuan</p>
+                    <h3 id="statRatio" class="text-4xl font-extrabold text-slate-900 mt-2">0%</h3>
+                </div>
+            </div>
+
+            <!-- Tabel Data -->
+            <div class="bg-white border-3 border-slate-900 rounded-2xl p-6 neo-shadow space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900">Hasil Analisis Audit 📊</h3>
+                        <p class="text-xs font-bold text-slate-500">Cross-check nomor HP akurat tanpa ampun</p>
+                    </div>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button id="btnFilterAll" class="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-extrabold px-4 py-2.5 rounded-xl border-2 border-slate-900 neo-shadow-sm cursor-pointer">
+                            Semua
+                        </button>
+                        <button id="btnFilterEmployee" class="flex-1 md:flex-none bg-emerald-400 hover:bg-emerald-300 text-slate-900 text-xs font-extrabold px-4 py-2.5 rounded-xl border-2 border-slate-900 neo-shadow-sm cursor-pointer">
+                            Hanya Karyawan 🔍
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Wrapper -->
+                <div class="overflow-x-auto border-2 border-slate-900 rounded-xl">
+                    <table class="min-w-full divide-y-2 divide-slate-900 text-left">
+                        <thead class="bg-slate-100 text-slate-900 text-xs font-extrabold uppercase">
+                            <tr>
+                                <th class="px-4 py-3">Tanggal</th>
+                                <th class="px-4 py-3">No. Invoice</th>
+                                <th class="px-4 py-3">No. HP Pelanggan</th>
+                                <th class="px-4 py-3">Nama Pelanggan</th>
+                                <th class="px-4 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y-2 divide-slate-200 text-xs font-medium">
+                            <!-- Data dinamis -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Script Logika -->
+    <script>
+        let employeeDatabase = new Set(); 
+        let globalProcessedData = []; 
+
+        document.getElementById('dbFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('dbStatus').innerHTML = `⏳ Lagi baca ${file.name}...`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    employeeDatabase.clear();
+                    json.forEach(row => {
+                        for (let key in row) {
+                            const lowerKey = key.toLowerCase();
+                            if (lowerKey.includes('phone') || lowerKey.includes('hp') || lowerKey.includes('telepon')) {
+                                let phone = String(row[key]).replace(/\D/g, '').trim();
+                                if (phone) employeeDatabase.add(phone);
+                            }
+                        }
+                    });
+
+                    document.getElementById('dbStatus').innerHTML = `🔥 Mantap! Berhasil muat ${employeeDatabase.size} nomor karyawan.`;
+                    document.getElementById('dbStatus').className = "text-xs font-bold text-emerald-700 bg-emerald-100 p-3 rounded-xl border-2 border-emerald-300";
+                } catch (err) {
+                    alert('Gagal membaca file database: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        document.getElementById('reportFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('reportStatus').innerHTML = `✅ ${file.name} siap dieksekusi!`;
+                document.getElementById('reportStatus').className = "text-xs font-bold text-pink-700 bg-pink-100 p-3 rounded-xl border-2 border-pink-300";
+            }
+        });
+
+        function displayTableData(dataToRender) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            if (dataToRender.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500 font-bold">Data kosong, bro.</td></tr>`;
+                return;
+            }
+
+            dataToRender.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = row.isEmployee ? 'bg-emerald-100/60 font-bold' : 'hover:bg-slate-50';
+
+                const statusBadge = row.isEmployee 
+                    ? `<span class="bg-red-400 text-slate-900 border-2 border-slate-900 px-2.5 py-1 rounded-lg text-xs font-extrabold neo-shadow-sm">KARYAWAN 🚨</span>`
+                    : `<span class="bg-slate-200 text-slate-700 border-2 border-slate-900 px-2.5 py-1 rounded-lg text-xs font-bold">Regular</span>`;
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-slate-700">${row.date}</td>
+                    <td class="px-4 py-3 font-mono font-bold text-slate-900">${row.invoice}</td>
+                    <td class="px-4 py-3 font-mono text-slate-600">${row.phone || '-'}</td>
+                    <td class="px-4 py-3 text-slate-900 font-bold">${row.name}</td>
+                    <td class="px-4 py-3">${statusBadge}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('btnProcess').addEventListener('click', function() {
+            const reportFile = document.getElementById('reportFile').files[0];
+            if (!reportFile) {
+                alert('Pilih file laporan dulu, bro!');
+                return;
+            }
+            if (employeeDatabase.size === 0) {
+                alert('Database karyawan belum di-upload!');
+                return;
+            }
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const reportJson = XLSX.utils.sheet_to_json(worksheet);
+
+                    globalProcessedData = [];
+                    let employeeCount = 0;
+
+                    reportJson.forEach(row => {
+                        let date = '-';
+                        let invoice = '-';
+                        let phone = '';
+                        let name = '-';
+
+                        for (let key in row) {
+                            const lKey = key.toLowerCase();
+                            if (lKey.includes('date') || lKey.includes('tanggal') || lKey.includes('tgl')) date = row[key];
+                            if (lKey.includes('invoice') || lKey.includes('struk') || lKey.includes('no')) invoice = row[key];
+                            if (lKey.includes('phone') || lKey.includes('hp') || lKey.includes('telepon') || lKey.includes('customer')) {
+                                let val = String(row[key]);
+                                let cleanNum = val.replace(/\D/g, '').trim();
+                                if (cleanNum.length >= 9) phone = cleanNum;
+                                if (lKey.includes('name') || lKey.includes('nama')) name = row[key];
+                            }
+                        }
+
+                        if (!phone) {
+                            for (let key in row) {
+                                let val = String(row[key]).replace(/\D/g, '').trim();
+                                if (val.length >= 10 && val.length <= 15) {
+                                    phone = val;
+                                    break;
+                                }
+                            }
+                        }
+
+                        const isEmployee = employeeDatabase.has(phone);
+                        if (isEmployee) employeeCount++;
+
+                        globalProcessedData.push({ date, invoice, phone, name, isEmployee });
+                    });
+
+                    const totalTransactions = globalProcessedData.length;
+                    const ratio = totalTransactions > 0 ? ((employeeCount / totalTransactions) * 100).toFixed(1) : 0;
+
+                    document.getElementById('statTotal').innerText = totalTransactions.toLocaleString();
+                    document.getElementById('statEmployee').innerText = employeeCount.toLocaleString();
+                    document.getElementById('statRatio').innerText = ratio + '%';
+
+                    displayTableData(globalProcessedData);
+
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('resultContainer').classList.remove('hidden');
+
+                } catch (err) {
+                    document.getElementById('loading').classList.add('hidden');
+                    alert('Error parsing file: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(reportFile);
+        });
+
+        document.getElementById('btnFilterEmployee').addEventListener('click', function() {
+            const filtered = globalProcessedData.filter(item => item.isEmployee);
+            displayTableData(filtered);
+        });
+
+        document.getElementById('btnFilterAll').addEventListener('click', function() {
+            displayTableData(globalProcessedData);
+        });
+    </script>
+</body>
+</html>
